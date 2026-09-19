@@ -2,7 +2,7 @@
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #f6f8f7;
+  background: var(--scms-page);
 }
 
 .admin-layout-content {
@@ -17,6 +17,7 @@
 .admin-layout-main {
   flex: 1;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 768px) {

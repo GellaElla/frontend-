@@ -6,15 +6,15 @@
   --sidebar-text: #2c3a33;
   --sidebar-text-muted: #6b7a72;
   --sidebar-border: #eef1ef;
-  --sidebar-width: 260px;
-  --sidebar-width-collapsed: 76px;
+  --sidebar-width: 272px;
+  --sidebar-width-collapsed: 80px;
 
   display: flex;
   flex-direction: column;
   width: var(--sidebar-width);
   height: 100vh;
   background: #ffffff;
-  border-right: 1px solid var(--sidebar-border);
+  border-right: 1px solid var(--scms-border);
   box-sizing: border-box;
   font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   flex-shrink: 0;
@@ -40,16 +40,18 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 24px 20px;
+  min-height: 92px;
+  padding: 22px 20px;
+  border-bottom: 1px solid #f0f4f1;
 }
 
 .sidebar-logo-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
   background: linear-gradient(135deg, var(--sidebar-green), var(--sidebar-green-dark));
   color: #ffffff;
   font-size: 20px;
@@ -81,8 +83,8 @@
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 20px 14px;
   flex: 1;
   overflow-y: auto;
 }
@@ -92,11 +94,12 @@
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-height: 48px;
   padding: 12px 14px;
   border: none;
   background: transparent;
-  border-radius: 10px;
-  font-size: 14.5px;
+  border-radius: 12px;
+  font-size: .94rem;
   font-weight: 500;
   color: var(--sidebar-text);
   cursor: pointer;
@@ -106,11 +109,12 @@
 }
 
 .sidebar-nav-item:hover {
-  background: #f4f7f4;
+  background: var(--scms-green-50);
+  color: var(--sidebar-green-dark);
 }
 
 .sidebar-nav-item.active {
-  background: var(--sidebar-green-active-bg);
+  background: linear-gradient(90deg, #e4f3e8, #edf8f0);
   color: var(--sidebar-green-active-text);
   font-weight: 700;
 }
@@ -127,7 +131,7 @@
 
 /* Footer / logout */
 .sidebar-footer {
-  padding: 12px;
+  padding: 14px;
   border-top: 1px solid var(--sidebar-border);
 }
 
@@ -150,7 +154,8 @@
 }
 
 .sidebar-logout:hover {
-  background: #f4f7f4;
+  background: #fff1f1;
+  color: #aa2d2d;
 }
 
 /* ============================================
@@ -240,4 +245,114 @@
     opacity: 1;
     pointer-events: auto;
   }
+}
+
+/* Desktop and tablet: toggle between full sidebar and icon rail */
+@media (min-width: 769px) {
+  .admin-layout .sidebar {
+    width: var(--sidebar-width, 272px);
+    transition: width 0.2s ease;
+  }
+
+  .admin-layout .sidebar-logo {
+    padding: 22px 20px;
+    justify-content: flex-start;
+  }
+
+  .admin-layout .sidebar-logo-text {
+    display: flex;
+  }
+
+  .admin-layout .sidebar-nav-item,
+  .admin-layout .sidebar-logout {
+    justify-content: flex-start;
+    padding: 12px 14px;
+  }
+
+  .admin-layout .sidebar-nav-label {
+    display: inline;
+  }
+
+  .admin-layout.sidebar-collapsed .sidebar {
+    width: 80px;
+  }
+
+  .admin-layout.sidebar-collapsed .sidebar-logo {
+    padding: 22px 0;
+    justify-content: center;
+  }
+
+  .admin-layout.sidebar-collapsed .sidebar-logo-text,
+  .admin-layout.sidebar-collapsed .sidebar-nav-label {
+    display: none;
+  }
+
+  .admin-layout.sidebar-collapsed .sidebar-nav-item,
+  .admin-layout.sidebar-collapsed .sidebar-logout {
+    justify-content: center;
+    padding: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-layout .sidebar {
+    transition: none;
+  }
+}
+
+.sidebar-logo-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.sidebar-nav-group {
+  width: 100%;
+}
+
+.sidebar-submenu-arrow {
+  margin-left: auto;
+  font-size: 14px;
+  transition: transform 0.2s ease;
+}
+
+.sidebar-submenu-arrow.open {
+  transform: rotate(180deg);
+}
+
+.sidebar-submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 4px 0 8px 42px;
+}
+
+.sidebar-submenu-item {
+  width: calc(100% - 12px);
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sidebar-submenu-item:hover,
+.sidebar-submenu-item.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
 }

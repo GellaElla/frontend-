@@ -17,6 +17,7 @@ import {
   FiCheckCircle,
 } from "react-icons/fi";
 import "./Records.css";
+import { createPortal } from "react-dom";
 
 /* ---------------------------------------------------------------- */
 /* Mock data — swap for real API data                                */
@@ -136,8 +137,9 @@ const STATUS_BADGE = {
   "Needs follow-up": "badge-amber",
   "Needs attention": "badge-red",
   Archived: "badge-gray",
+  Inactive: "badge-amber",
+  Deceased: "badge-gray",
 };
-
 function formatDateTime(d) {
   const date = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const time = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
@@ -191,7 +193,7 @@ function AddSeniorModal({ onClose, onSave }) {
   };
 
   return (
-    <div className="modal-overlay" onMouseDown={onClose}>
+    <div className="records-page modal-overlay archive-overlay">
       <div className="modal-card" onMouseDown={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h3>Add New Senior</h3>
@@ -204,14 +206,49 @@ function AddSeniorModal({ onClose, onSave }) {
           <label className="field-label">Full Name</label>
           <input className="field-input" type="text" value={form.name} onChange={update("name")} required />
 
-              <label className="field-label">Birth Date</label>
-                <input className="field-input" type="date" value={form.birthDate} onChange={update("birthDate")}/>
+            <label className="field-label">Birth Date</label>
+<input
+  className="field-input"
+  type="date"
+  value={form.birthDate}
+  onChange={(event) => {
+    const birthDate = event.target.value;
+    let age = "";
 
-          <div className="field-row">
-            <div>
-              <label className="field-label">Age</label>
-              <input className="field-input" type="number" min="60" value={form.age} onChange={update("age")} required />
-            </div>
+    if (birthDate) {
+      const [year, month, day] = birthDate.split("-").map(Number);
+      const today = new Date();
+
+      age = today.getFullYear() - year;
+
+      if (
+        today.getMonth() + 1 < month ||
+        (today.getMonth() + 1 === month && today.getDate() < day)
+      ) {
+        age -= 1;
+      }
+    }
+
+    setForm((previous) => ({
+      ...previous,
+      birthDate,
+      age,
+    }));
+  }}
+  required
+/>
+
+<div className="field-row">
+  <div>
+    <label className="field-label">Age</label>
+    <input
+      className="field-input"
+      type="number"
+      value={form.age}
+      readOnly
+      placeholder="Calculated from birth date"
+    />
+  </div>
             <div>
               <label className="field-label">Gender</label>
               <select className="field-input" value={form.gender} onChange={update("gender")}>
@@ -236,7 +273,87 @@ function AddSeniorModal({ onClose, onSave }) {
               <input className="field-input" type="text" placeholder="09XX XXX XXXX" value={form.contact} onChange={update("contact")} />
             </div>
           </div>
+<h4>Medical Information</h4>
 
+<div className="field-row">
+  <div>
+    <label className="field-label">Blood Type</label>
+    <input
+      className="field-input"
+      type="text"
+      value={form.bloodType ?? ""}
+      onChange={update("bloodType")}
+    />
+  </div>
+  <div>
+    <label className="field-label">Condition</label>
+    <input
+      className="field-input"
+      type="text"
+      value={form.condition ?? ""}
+      onChange={update("condition")}
+    />
+  </div>
+</div>
+
+<div className="field-row">
+  <div>
+    <label className="field-label">Maintenance</label>
+    <input
+      className="field-input"
+      type="text"
+      value={form.maintenance ?? ""}
+      onChange={update("maintenance")}
+    />
+  </div>
+</div>
+
+<h4>Other Information</h4>
+
+<div className="field-row">
+  <div>
+    <label className="field-label">Civil Status</label>
+   <select
+  className="field-input"
+  value={form.civilStatus ?? ""}
+  onChange={update("civilStatus")}
+>
+  <option value="">Select civil status</option>
+  <option value="Single">Single</option>
+  <option value="Married">Married</option>
+  <option value="Widowed">Widowed</option>
+  <option value="Separated">Separated</option>
+  <option value="Divorced">Divorced</option>
+</select>
+  </div>
+  <div>
+    <label className="field-label">OSCA ID Status</label>
+    <select
+      className="field-input"
+      value={form.oscaId ?? "Active"}
+      onChange={update("oscaId")}
+    >
+      <option value="Active">Active</option>
+      <option value="Inactive">Inactive</option>
+    </select>
+  </div>
+</div>
+
+<label className="field-label">Emergency Contact</label>
+<input
+  className="field-input"
+  type="text"
+  value={form.emergencyContact ?? ""}
+  onChange={update("emergencyContact")}
+/>
+
+<label className="field-label"> Emergency Contact’s Relationship to Senior</label>
+<input
+  className="field-input"
+  type="text"
+  value={form.relationship ?? ""}
+  onChange={update("relationship")}
+/>
           <div className="modal-actions">
             <button type="button" className="btn-outline" onClick={onClose}>Cancel</button>
             <button type="submit" className="btn-primary">Add Senior</button>
@@ -305,7 +422,23 @@ function EditSeniorModal({ record, onClose, onSave }) {
           </button>
         </div>
 
-        <form onSubmit={submit} className="modal-form">
+      <form
+  className="modal-form"
+  onSubmit={(event) => {
+    if (
+      !form.birthDate ||
+      form.age === "" ||
+      !Number.isFinite(Number(form.age)) ||
+      Number(form.age) < 60
+    ) {
+      event.preventDefault();
+      alert("Please select a valid birth date. Senior citizens must be at least 60 years old.");
+      return;
+    }
+
+    submit(event);
+  }}
+>
           <label className="field-label">Full Name</label>
           <input
             className="field-input"
@@ -409,15 +542,7 @@ function EditSeniorModal({ record, onClose, onSave }) {
               />
             </div>
 
-            <div>
-              <label className="field-label">Last Checkup</label>
-              <input
-                className="field-input"
-                type="date"
-                value={form.lastCheckup}
-                onChange={update("lastCheckup")}
-              />
-            </div>
+         
           </div>
 
           <h4>Other Information</h4>
@@ -425,12 +550,18 @@ function EditSeniorModal({ record, onClose, onSave }) {
           <div className="field-row">
             <div>
               <label className="field-label">Civil Status</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.civilStatus}
-                onChange={update("civilStatus")}
-              />
+             <select
+  className="field-input"
+  value={form.civilStatus ?? ""}
+  onChange={update("civilStatus")}
+>
+  <option value="">Select civil status</option>
+  <option value="Single">Single</option>
+  <option value="Married">Married</option>
+  <option value="Widowed">Widowed</option>
+  <option value="Separated">Separated</option>
+  <option value="Divorced">Divorced</option>
+</select>
             </div>
 
             <div>
@@ -454,7 +585,7 @@ function EditSeniorModal({ record, onClose, onSave }) {
             onChange={update("emergencyContact")}
           />
 
-          <label className="field-label">Relationship</label>
+          <label className="field-label"> Emergency Contact’s Relationship to Senior</label>
           <input
             className="field-input"
             type="text"
@@ -483,232 +614,6 @@ function EditSeniorModal({ record, onClose, onSave }) {
 
 function RecordPanel({ record, onClose }) {
   if (!record) return null;
-function EditSeniorModal({ record, onClose, onSave }) {
-  const [form, setForm] = useState({
-    name: record.name || "",
-    age: record.age || "",
-    gender: record.gender || "Male",
-    purok: record.purok || PUROKS[0],
-    contact: record.contact || "",
-
-    bloodType: record.medical?.bloodType || "",
-    condition: record.medical?.condition || "",
-    maintenance: record.medical?.maintenance || "",
-    lastCheckup:
-      record.medical?.lastCheckup &&
-      record.medical.lastCheckup !== "-"
-        ? String(record.medical.lastCheckup).slice(0, 10)
-        : "",
-
-    civilStatus: record.other?.civilStatus || "",
-    emergencyContact: record.other?.emergencyContact || "",
-    relationship: record.other?.relationship || "",
-    oscaId: record.other?.oscaId || "Active",
-  });
-
-  const update = (field) => (e) => {
-    setForm((prev) => ({
-      ...prev,
-      [field]: e.target.value,
-    }));
-  };
-
-  const submit = (e) => {
-    e.preventDefault();
-    onSave(record.id, form);
-  };
-
-  return (
-    <div className="modal-overlay" onMouseDown={onClose}>
-      <div
-        className="modal-card"
-        onMouseDown={(e) => e.stopPropagation()}
-        style={{ maxHeight: "90vh", overflowY: "auto" }}
-      >
-        <div className="modal-header">
-          <h3>Edit Senior Record</h3>
-
-          <button
-            type="button"
-            className="modal-close"
-            onClick={onClose}
-          >
-            <FiX />
-          </button>
-        </div>
-
-        <form onSubmit={submit} className="modal-form">
-          <label className="field-label">Full Name</label>
-          <input
-            className="field-input"
-            type="text"
-            value={form.name}
-            onChange={update("name")}
-            required
-          />
-
-          <div className="field-row">
-            <div>
-              <label className="field-label">Age</label>
-              <input
-                className="field-input"
-                type="number"
-                min="60"
-                value={form.age}
-                onChange={update("age")}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="field-label">Gender</label>
-              <select
-                className="field-input"
-                value={form.gender}
-                onChange={update("gender")}
-              >
-                {GENDERS.map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="field-row">
-            <div>
-              <label className="field-label">Purok</label>
-              <select
-                className="field-input"
-                value={form.purok}
-                onChange={update("purok")}
-              >
-                {PUROKS.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="field-label">Contact Number</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.contact}
-                onChange={update("contact")}
-              />
-            </div>
-          </div>
-
-          <h4>Medical Information</h4>
-
-          <div className="field-row">
-            <div>
-              <label className="field-label">Blood Type</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.bloodType}
-                onChange={update("bloodType")}
-              />
-            </div>
-
-            <div>
-              <label className="field-label">Condition</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.condition}
-                onChange={update("condition")}
-              />
-            </div>
-          </div>
-
-          <div className="field-row">
-            <div>
-              <label className="field-label">Maintenance</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.maintenance}
-                onChange={update("maintenance")}
-              />
-            </div>
-
-            <div>
-              <label className="field-label">Last Checkup</label>
-              <input
-                className="field-input"
-                type="date"
-                value={form.lastCheckup}
-                onChange={update("lastCheckup")}
-              />
-            </div>
-          </div>
-
-          <h4>Other Information</h4>
-
-          <div className="field-row">
-            <div>
-              <label className="field-label">Civil Status</label>
-              <input
-                className="field-input"
-                type="text"
-                value={form.civilStatus}
-                onChange={update("civilStatus")}
-              />
-            </div>
-
-            <div>
-              <label className="field-label">OSCA ID Status</label>
-              <select
-                className="field-input"
-                value={form.oscaId}
-                onChange={update("oscaId")}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
-          </div>
-
-          <label className="field-label">Emergency Contact</label>
-          <input
-            className="field-input"
-            type="text"
-            value={form.emergencyContact}
-            onChange={update("emergencyContact")}
-          />
-
-          <label className="field-label">Relationship</label>
-          <input
-            className="field-input"
-            type="text"
-            value={form.relationship}
-            onChange={update("relationship")}
-          />
-
-          <div className="modal-actions">
-            <button
-              type="button"
-              className="btn-outline"
-              onClick={onClose}
-            >
-              Cancel
-            </button>
-
-            <button type="submit" className="btn-primary">
-              Save Changes
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
   return (
     <aside className="record-panel">
       <button type="button" className="panel-close" onClick={onClose} aria-label="Close">
@@ -724,6 +629,11 @@ function EditSeniorModal({ record, onClose, onSave }) {
       <div className="info-section">
         <h4>Personal Information</h4>
         <div className="info-row"><span>Age</span><strong>{record.age}</strong></div>
+        <div className="info-row">
+        <span>Birth Date</span><strong>
+        {record.birthDate  ? new Date(`${record.birthDate.slice(0, 10)}T00:00:00`) 
+        .toLocaleDateString("en-US", {    month: "long", day: "numeric",  year: "numeric",  
+        }): "Not provided"} </strong></div>
         <div className="info-row"><span>Gender</span><strong>{record.gender}</strong></div>
         <div className="info-row"><span>Purok</span><strong>{record.purok}</strong></div>
         <div className="info-row"><span>Contact</span><strong>{record.contact}</strong></div>
@@ -738,7 +648,7 @@ function EditSeniorModal({ record, onClose, onSave }) {
         <div className="info-row"><span>Blood Type</span><strong>{record.medical.bloodType}</strong></div>
         <div className="info-row"><span>Condition</span><strong>{record.medical.condition}</strong></div>
         <div className="info-row"><span>Maintenance</span><strong>{record.medical.maintenance}</strong></div>
-        <div className="info-row"><span>Last Checkup</span><strong>{record.medical.lastCheckup}</strong></div>
+       
       </div>
 
       <div className="info-section">
@@ -774,6 +684,11 @@ export default function Records() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedId, setSelectedId] = useState(null);
   const [kebabOpenId, setKebabOpenId] = useState(null);
+  const [archiveRecord, setArchiveRecord] = useState(null);
+  const [kebabPosition, setKebabPosition] = useState({
+  top: 0,
+  left: 0,
+});
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
 
@@ -837,13 +752,25 @@ useEffect(() => {
     [records]
   );
 
-  const tabCounts = useMemo(() => {
-    const counts = { All: records.length };
-    STATUSES.forEach((s) => {
-      counts[s] = records.filter((r) => r.status === s).length;
-    });
-    return counts;
-  }, [records]);
+const tabCounts = useMemo(() => {
+  const counts = { All: records.length };
+
+  STATUSES.forEach((status) => {
+    counts[status] = records.filter((record) =>
+      status === "Archived"
+        ? ["Archived", "Inactive", "Deceased"].includes(record.status)
+        : record.status === status
+    ).length;
+  });
+console.table(
+  records.map((record) => ({
+    id: record.id,
+    status: JSON.stringify(record.status),
+  }))
+);
+
+  return counts;
+}, [records]);
 
   const activeTab = statusFilter.length === 1 ? statusFilter[0] : "All";
 
@@ -852,19 +779,30 @@ useEffect(() => {
   };
 
   const filtered = useMemo(() => {
-    let list = records;
+  let list = records;
 
-    if (statusFilter.length > 0) {
-      list = list.filter((r) => statusFilter.includes(r.status));
-    }
+  if (statusFilter.length > 0) {
+    list = list.filter((r) =>
+      statusFilter.includes(r.status) ||
+      (
+        statusFilter.includes("Archived") &&
+        ["Inactive", "Deceased"].includes(r.status)
+      )
+    );
+  }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.trim().toLowerCase();
-      list = list.filter((r) => r.name.toLowerCase().includes(q) || r.seniorId.toLowerCase().includes(q));
-    }
+  if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
 
-    return list;
-  }, [records, searchQuery, statusFilter]);
+    list = list.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.seniorId.toLowerCase().includes(q)
+    );
+  }
+
+  return list;
+}, [records, searchQuery, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const page = Math.min(currentPage, totalPages);
@@ -876,17 +814,24 @@ useEffect(() => {
     setStatusFilter((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
   };
 
-  const toggleArchive = async (id) => {
+ const toggleArchive = async (id) => {
   const record = records.find((r) => r.id === id);
-
   if (!record) return;
 
-  const newStatus =
-    record.status === "Archived" ? "Active" : "Archived";
+  setKebabOpenId(null);
+
+  const isArchived = ["Archived", "Inactive", "Deceased"].includes(
+    record.status
+  );
+
+  if (!isArchived) {
+    setArchiveRecord(record);
+    return;
+  }
 
   try {
     const updated = await updateSeniorCitizen(id, {
-      status: newStatus,
+      status: "Active",
     });
 
     setRecords((prev) =>
@@ -901,11 +846,36 @@ useEffect(() => {
       )
     );
   } catch (error) {
-    console.error("Failed to archive senior:", error);
-    alert("Unable to update senior citizen.");
+    console.error("Failed to restore senior:", error);
+    alert("Unable to restore senior citizen.");
   }
+};
 
-  setKebabOpenId(null);
+const saveArchiveStatus = async (status) => {
+  if (!archiveRecord) return;
+
+  try {
+    const updated = await updateSeniorCitizen(archiveRecord.id, {
+      status,
+    });
+
+    setRecords((prev) =>
+      prev.map((r) =>
+        r.id === archiveRecord.id
+          ? {
+              ...r,
+              status: updated.status,
+              lastUpdated: new Date(updated.updated_at),
+            }
+          : r
+      )
+    );
+
+    setArchiveRecord(null);
+  } catch (error) {
+    console.error("Failed to archive senior:", error);
+    alert("Unable to archive senior citizen.");
+  }
 };
 
   const deleteRecord = async (id) => {
@@ -930,7 +900,7 @@ useEffect(() => {
   setKebabOpenId(null);
 };
 
-  const handleAddSenior = async (form) => {
+ const handleAddSenior = async (form) => {
   try {
     const created = await createSeniorCitizen({
       name: form.name,
@@ -939,8 +909,18 @@ useEffect(() => {
       gender: form.gender,
       purok: form.purok,
       contact: form.contact,
-    });
 
+      blood_type: form.bloodType || null,
+      condition: form.condition || null,
+      maintenance: form.maintenance || null,
+      
+
+      civil_status: form.civilStatus || null,
+      emergency_contact: form.emergencyContact || null,
+      relationship: form.relationship || null,
+      osca_id: form.oscaId || "Active",
+    });
+    
     const newRecord = {
       id: created.id,
       seniorId: created.senior_id,
@@ -1101,7 +1081,7 @@ const handleEditSenior = async (id, form) => {
           <div className="stat-card">
             <span className="stat-icon tone-blue"><FiArchive /></span>
             <div className="stat-body">
-              <span className="stat-value">{stats.archived}</span>
+           <span className="stat-value">{tabCounts.Archived ?? 0}</span>
               <span className="stat-label">Archived</span>
               <span className="stat-sublabel">Inactive / Deceased</span>
             </div>
@@ -1205,55 +1185,73 @@ const handleEditSenior = async (id, form) => {
                             View
                           </button>
                           <div className="kebab-wrap" ref={kebabOpenId === r.id ? kebabRef : null}>
-                            <button
-                              type="button"
-                              className="icon-btn"
-                              onClick={() => setKebabOpenId((cur) => (cur === r.id ? null : r.id))}
-                              aria-label="More actions"
-                            >
-                              <FiMoreVertical />
-                            </button>
-                            {kebabOpenId === r.id && (
-                              <div className="dropdown-menu kebab-menu">
-                                <button
-                           type="button"
-                   className="dropdown-item"
-                     onClick={() => {
-                        setSelectedId(r.id);
-                         setKebabOpenId(null);
-                                    }}
-                                    >
-                                 View Details
-                         </button>
-
-                  <button                   
+                           <button
                        type="button"
-                       className="dropdown-item"
-                                 onClick={() => {
-                                       setEditingRecord(r);
-                                        setKebabOpenId(null);
-                                               }}
-                                            >
-                                 Edit Record
-                                  </button>
+                    className="icon-btn"
+                   onClick={(event) => {
+                 const rect = event.currentTarget.getBoundingClientRect();
 
-                          <button
-                        type="button"
-                            className="dropdown-item"
-                                     onClick={() => toggleArchive(r.id)}
-                                          >
-                                     {r.status === "Archived" ? "Unarchive" : "Archive"}
-                                            </button>
+                       setKebabPosition({
+                      top: rect.bottom + 6,
+                  left: Math.max(8, Math.min(rect.right - 190, window.innerWidth - 198)),
+                           });
 
-                                              <button
-                                             type="button"
-                                   className="dropdown-item danger"
-                                       onClick={() => deleteRecord(r.id)}
-                                   >
-                               Delete Record
-                             </button>           
-                              </div>
-                            )}
+                    setKebabOpenId((cur) => (cur === r.id ? null : r.id));
+                     }}
+                 aria-label="More actions"
+                   aria-expanded={kebabOpenId === r.id}
+                    >
+                                <FiMoreVertical />
+                            </button>
+                           {kebabOpenId === r.id &&
+                  createPortal(
+                    <div className="records-page" style={{ display: "contents" }}>
+                       <div
+        className="dropdown-menu kebab-menu"
+        style={{
+          position: "fixed",
+          top: Math.max(
+            8,
+            Math.min(kebabPosition.top, window.innerHeight - 248)
+          ),
+          left: kebabPosition.left,
+          right: "auto",
+          width: 190,
+          maxHeight: "calc(100dvh - 16px)",
+          overflowY: "auto",
+          zIndex: 2000,
+        }}
+        onMouseDown={(event) => event.stopPropagation()}
+        onTouchStart={(event) => event.stopPropagation()}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setKebabOpenId(null);
+        }}
+      >
+        <button
+          type="button"
+          className="dropdown-item"
+          onClick={() => {
+            setEditingRecord(r);
+            setKebabOpenId(null);
+          }}
+        >
+          Edit Record
+        </button>
+
+       <button
+  type="button"
+  className="dropdown-item"
+  onClick={() => toggleArchive(r.id)}
+>
+  {["Archived", "Inactive", "Deceased"].includes(r.status)
+    ? "Unarchive"
+    : "Archive"}
+</button>
+       
+      </div>
+    </div>,
+    document.body
+  )}
                           </div>
                         </div>
                       </td>
@@ -1299,21 +1297,79 @@ const handleEditSenior = async (id, form) => {
           </div>
         </div>
 
-        {/* Guide */}
-        <div className="records-guide-row">
-          <div className="guide-card">
-            <h4>Status Guide</h4>
-            <div className="guide-item"><span className="status-dot dot-green" /> Active &ndash; regularly monitored, no concerns</div>
-            <div className="guide-item"><span className="status-dot dot-amber" /> Needs follow-up &ndash; requires a check-in soon</div>
-            <div className="guide-item"><span className="status-dot dot-red" /> Needs attention &ndash; high priority, urgent care</div>
-            <div className="guide-item"><span className="status-dot dot-gray" /> Archived &ndash; inactive or deceased</div>
-          </div>
-        </div>
       </div>
 
-      {selectedRecord && <RecordPanel record={selectedRecord} onClose={() => setSelectedId(null)} />}
+   {selectedRecord &&
+  createPortal(
+    <div className="records-page record-view-overlay">
+      <RecordPanel
+        record={selectedRecord}
+        onClose={() => setSelectedId(null)}
+      />
+    </div>,
+    document.body
+  )}
+  {archiveRecord && createPortal(
+  <div
+   className="records-page modal-overlay archive-overlay"
+    onMouseDown={() => setArchiveRecord(null)}
+  >
+    <div
+      className="modal-card"
+      style={{ width: "100%", maxWidth: 420 }}
+      onMouseDown={(e) => e.stopPropagation()}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="archive-title"
+    >
+      <div className="modal-header">
+        <h3 id="archive-title">Archive Record</h3>
+        <button
+          type="button"
+          className="modal-close"
+          onClick={() => setArchiveRecord(null)}
+          aria-label="Close"
+        >
+          <FiX />
+        </button>
+      </div>
+
+      <div className="modal-form">
+        <p>Why are you archiving {archiveRecord.name}?</p>
+
+        <button
+          type="button"
+          className="btn-outline"
+          onClick={() => saveArchiveStatus("Inactive")}
+        >
+          Inactive — no longer living in the area
+        </button>
+
+        <button
+          type="button"
+          className="btn-outline"
+          onClick={() => saveArchiveStatus("Deceased")}
+        >
+          Deceased — has passed away
+        </button>
+
+        <div className="modal-actions">
+          <button
+            type="button"
+            className="btn-outline"
+            onClick={() => setArchiveRecord(null)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>,
+  document.body
+)}
       {addModalOpen && <AddSeniorModal onClose={() => setAddModalOpen(false)} onSave={handleAddSenior} />}
         {editingRecord && <EditSeniorModal record={editingRecord} onClose={() => setEditingRecord(null)} onSave={handleEditSenior}/>}
     </div>
   );
 }
+

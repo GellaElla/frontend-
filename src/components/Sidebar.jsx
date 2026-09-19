@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FiHome,
   FiCheckSquare,
@@ -8,7 +8,7 @@ import {
   FiX,
 } from "react-icons/fi";
 import { PiCakeDuotone } from "react-icons/pi";
-import { GiHeartWings } from "react-icons/gi";
+import scmsLogo from "../assets/scms-logo.png";
 import "./Sidebar.css";
 
 const NAV_ITEMS = [
@@ -17,6 +17,16 @@ const NAV_ITEMS = [
   { key: "records", label: "Records", icon: FiFolder },
   { key: "announcements", label: "Announcements", icon: FiVolume2 },
   { key: "birthday", label: "Birthday List", icon: PiCakeDuotone },
+  {
+  key: "programs",
+  label: "Program Management",
+  icon: FiFolder,
+  children: [
+    { key: "pension", label: "Pension" },
+    { key: "medical", label: "Medical" },
+    { key: "burial", label: "Burial" },
+  ],
+},
 ];
 
 /**
@@ -34,6 +44,8 @@ export default function Sidebar({
   isOpen = false,
   onClose,
 }) {
+  const [programOpen, setProgramOpen] = useState(false);
+
   const handleNavigate = (key) => {
     onNavigate && onNavigate(key);
     // auto-close the drawer on mobile after picking a page
@@ -52,8 +64,8 @@ export default function Sidebar({
       <aside className={`sidebar${isOpen ? " open" : ""}`}>
         <div className="sidebar-logo">
           <span className="sidebar-logo-icon">
-            <GiHeartWings />
-          </span>
+  <img src={scmsLogo} alt="Senior Citizen Management System logo" />
+</span>
           <div className="sidebar-logo-text">
             <span className="sidebar-logo-title">Senior Citizen</span>
             <span className="sidebar-logo-subtitle">Management System</span>
@@ -65,23 +77,54 @@ export default function Sidebar({
             onClick={onClose}
             aria-label="Close menu"
           >
-            <FiX />
+            <FiX /> 
           </button>
         </div>
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map(({ key, label, icon: Icon }) => (
-            <button
-              key={key}
-              type="button"
-              title={label}
-              className={`sidebar-nav-item${key === activeKey ? " active" : ""}`}
-              onClick={() => handleNavigate(key)}
-            >
-              <Icon className="sidebar-nav-icon" />
-              <span className="sidebar-nav-label">{label}</span>
-            </button>
-          ))}
+         {NAV_ITEMS.map(({ key, label, icon: Icon, children }) => (
+  <div key={key} className="sidebar-nav-group">
+    <button
+      type="button"
+      title={label}
+      className={`sidebar-nav-item${key === activeKey ? " active" : ""}`}
+      onClick={() => {
+        if (children) {
+          setProgramOpen((open) => !open);
+        } else {
+          handleNavigate(key);
+        }
+      }}
+      aria-current={key === activeKey ? "page" : undefined}
+      aria-expanded={children ? programOpen : undefined}
+    >
+      <Icon className="sidebar-nav-icon" />
+      <span className="sidebar-nav-label">{label}</span>
+      {children && (
+        <span className={`sidebar-submenu-arrow${programOpen ? " open" : ""}`}>
+          ▾
+        </span>
+      )}
+    </button>
+
+    {children && programOpen && (
+      <div className="sidebar-submenu">
+        {children.map((child) => (
+          <button
+            key={child.key}
+            type="button"
+            className={`sidebar-submenu-item${
+              child.key === activeKey ? " active" : ""
+            }`}
+            onClick={() => handleNavigate(child.key)}
+          >
+            {child.label}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+))}
         </nav>
 
         <div className="sidebar-footer">

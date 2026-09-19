@@ -1020,3 +1020,139 @@
     flex-wrap: wrap;
   }
 }
+
+/* Birthday page organization */
+.birthday-list .bl-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.birthday-list .bl-main,
+.birthday-list .bl-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.birthday-list .panel {
+  border-radius: 16px;
+  overflow: visible;
+}
+
+.birthday-list .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.birthday-list .celebrant-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.birthday-list .filters-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.birthday-list .table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+}
+
+.birthday-list .bl-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+}
+
+.birthday-list .bl-table th,
+.birthday-list .bl-table td {
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .birthday-list .bl-body {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-list .bl-side {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .birthday-list .celebrant-grid,
+  .birthday-list .filters-grid,
+  .birthday-list .bl-side {
+    grid-template-columns: 1fr;
+  }
+}
+.birthday-list .bl-body {
+  display: block;
+}
+
+.birthday-list .bl-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.birthday-list .birthday-list-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.birthday-list .birthday-search {
+  width: min(100%, 320px);
+}
+
+.birthday-list .upcoming-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 700px) {
+  .birthday-list .upcoming-list {
+    grid-template-columns: 1fr;
+  }
+
+  .birthday-list .birthday-search {
+    width: 100%;
+  }
+}
+
+.birthday-list .celebrant-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.birthday-list .celebrant-card {
+  min-width: 0;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 650px) {
+  .birthday-list .celebrant-grid {
+    grid-template-columns: 1fr;
+  }
+}

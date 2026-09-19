@@ -8,7 +8,9 @@ import DocumentVerification from "./Pages/DocumentVerification";
 import Records from "./Pages/Records";
 import Announcements from "./Pages/Announcements";
 import BirthdayList from "./Pages/BirthdayList";
-
+import ResetPassword from "./Pages/ResetPassword";
+import ForgotPassword from "./Pages/ForgotPassword";
+import Pension from "./Pages/Pension";
 import "./index.css";
 
 const AUTH_KEY = "scms_is_authenticated";
@@ -29,7 +31,7 @@ export default function App() {
     Boolean(sessionStorage.getItem(TOKEN_KEY))
 );
   const [adminName, setAdminName] = useState(
-    () => localStorage.getItem(NAME_KEY) || "Admin"
+    () => localStorage.getItem(NAME_KEY) || sessionStorage.getItem(NAME_KEY) || "Admin"
   );
 
   const handleLoginSuccess = (username, remember) => {
@@ -38,6 +40,11 @@ export default function App() {
     if (remember) {
       localStorage.setItem(AUTH_KEY, "true");
       localStorage.setItem(NAME_KEY, username);
+      sessionStorage.removeItem(NAME_KEY);
+    } else {
+      sessionStorage.setItem(NAME_KEY, username);
+      localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(NAME_KEY);
     }
   };
 
@@ -49,7 +56,9 @@ export default function App() {
   } finally {
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(NAME_KEY);
-   sessionStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    sessionStorage.removeItem(NAME_KEY);
+    sessionStorage.removeItem(TOKEN_KEY);
 
     setIsAuthenticated(false);
   }
@@ -57,6 +66,8 @@ export default function App() {
 
   return (
     <Routes>
+      <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* Public route */}
       <Route
         path="/login"
@@ -82,6 +93,9 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="document-verification" element={<DocumentVerification />} />
         <Route path="records" element={<Records />} />
+        <Route path="pension" element={<Pension />} />
+        <Route path="medical" element={<Records />} />
+        <Route path="burial" element={<Records />} />
         <Route path="announcements" element={<Announcements />} />
         <Route path="birthday-list" element={<BirthdayList />} />
       </Route>

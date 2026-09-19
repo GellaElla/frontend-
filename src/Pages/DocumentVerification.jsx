@@ -919,34 +919,7 @@ const handleRemoveApplication = async (id) => {
               </button>
             </div>
           </div>
-        </div>
-
-        {/* Priority guide + tip */}
-        <div className="dv-footer-row">
-          <div className="priority-guide">
-            <h4>Priority Guide</h4>
-            <div className="guide-item">
-              <span className="guide-dot dot-red" />
-              High &ndash; Submitted 7+ days ago
-            </div>
-            <div className="guide-item">
-              <span className="guide-dot dot-amber" />
-              Medium &ndash; Submitted 3&ndash;6 days ago
-            </div>
-            <div className="guide-item">
-              <span className="guide-dot dot-green" />
-              Low &ndash; Submitted today
-            </div>
-          </div>
-
-          <div className="tip-box">
-            <FiInfo />
-            <span>
-              <strong>Tip:</strong> Review and verify older applications first to ensure faster
-              processing.
-            </span>
-          </div>
-        </div>
+        </div>     
       </div>
 
       {selectedApplicant && (

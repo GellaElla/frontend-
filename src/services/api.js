@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000/api';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api').replace(/\/$/, '');
 
 function authHeaders() {
 const token =
@@ -7,7 +7,7 @@ const token =
 
   return {
     "Accept": "application/json",
-    "Authorization": `Bearer ${token}`,
+    ...(token ? { "Authorization": `Bearer ${token}` } : {}),
   };
 }
 
@@ -220,4 +220,98 @@ export async function logoutUser() {
   }
 
   return response.json();
+}
+export async function resetPassword({
+  token,
+  email,
+  password,
+  password_confirmation,
+}) {
+  const response = await fetch(`${API_URL}/reset-password`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      token,
+      email,
+      password,
+      password_confirmation,
+    }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const validationMessage = Object.values(data.errors || {})
+      .flat()
+      .find(Boolean);
+
+    throw new Error(
+      validationMessage || data.message || "Unable to reset your password."
+    );
+  }
+
+  return data;
+}
+export async function sendPasswordResetLink(email) {
+  const response = await fetch(`${API_URL}/forgot-password`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    const validationMessage = Object.values(data.errors || {})
+      .flat()
+      .find(Boolean);
+
+    throw new Error(
+      validationMessage ||
+      data.message ||
+      "Unable to send the reset link. Please try again."
+    );
+  }
+
+  return data;
+}
+
+
+
+export async function getPensionReleases() {
+  const response = await fetch(`${API_URL}/pension-releases`, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to load pension releases");
+  }
+
+  return response.json();
+}
+
+export async function createPensionRelease(data) {
+  const response = await fetch(`${API_URL}/pension-releases`, {
+    method: "POST",
+    headers: {
+      ...authHeaders(),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error("Laravel pension release error:", result);
+    throw new Error(result.message || "Failed to create pension release");
+  }
+
+  return result;
 }

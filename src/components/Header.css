@@ -6,9 +6,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64px;
-  padding: 0 24px;
-  background: linear-gradient(90deg, var(--header-green-darker), var(--header-green));
+  height: 68px;
+  padding: 0 clamp(16px, 2.4vw, 32px);
+  background: linear-gradient(100deg, #063d1f, #08703a);
+  box-shadow: 0 3px 16px rgba(6, 61, 31, 0.15);
   box-sizing: border-box;
   font-family: "Segoe UI", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -38,6 +39,9 @@
 .app-header-menu-btn:hover {
   background: rgba(255, 255, 255, 0.12);
 }
+
+.app-header-menu-btn:focus-visible,
+.app-header-profile:focus-visible { outline-color: rgba(255, 255, 255, .72); }
 
 .app-header-welcome {
   color: #ffffff;
@@ -111,8 +115,9 @@
   right: 0;
   min-width: 180px;
   background: #ffffff;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--scms-border);
+  border-radius: 12px;
+  box-shadow: 0 16px 38px rgba(19, 43, 27, .16);
   padding: 6px;
   display: flex;
   flex-direction: column;

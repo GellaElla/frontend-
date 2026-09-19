@@ -50,6 +50,9 @@ export default function Header({
           type="button"
           className="app-header-profile"
           onClick={() => setMenuOpen((open) => !open)}
+          aria-expanded={menuOpen}
+          aria-haspopup="menu"
+          aria-label={`Open account menu for ${adminName}`}
         >
           <span className="app-header-avatar">
             {avatarUrl ? (
@@ -65,22 +68,12 @@ export default function Header({
         </button>
 
         {menuOpen && (
-          <div className="app-header-dropdown">
-            <button type="button" className="app-header-dropdown-item">
+          <div className="app-header-dropdown" role="menu">
+            <button type="button" className="app-header-dropdown-item" role="menuitem">
               <FiSettings />
               <span>Settings</span>
             </button>
-            <button
-              type="button"
-              className="app-header-dropdown-item danger"
-              onClick={() => {
-                setMenuOpen(false);
-                onLogout && onLogout();
-              }}
-            >
-              <FiLogOut />
-              <span>Logout</span>
-            </button>
+           
           </div>
         )}
       </div>

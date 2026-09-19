@@ -706,142 +706,28 @@ useEffect(() => {
             </div>
           </section>
 
-          {/* Search & filters */}
-          <section className="panel">
-            <h2 className="filters-title">
-              <FiFilter /> Search &amp; Filters
-            </h2>
-
-            <div className="filters-grid">
-              <div className="filter-field">
-                <label>Search Name</label>
-                <div className="search-box">
-                  <input
-                    type="text"
-                    placeholder="Enter name..."
-                    value={searchName}
-                    onChange={(e) => setSearchName(e.target.value)}
-                  />
-                  <FiSearch />
-                </div>
-              </div>
-
-              <div className="filter-field" ref={barangayRef}>
-                <label>Purok</label>
-                <button type="button" className="select-btn" onClick={() => setBarangayOpen((o) => !o)}>
-                  {barangayFilter}
-                  <FiChevronDown className={`chevron${barangayOpen ? " open" : ""}`} />
-                </button>
-                {barangayOpen && (
-                  <div className="dropdown-menu">
-                    {["All Puroks", ...BARANGAYS].map((b) => (
-                      <button
-                        key={b}
-                        type="button"
-                        className={`dropdown-item${b === barangayFilter ? " active" : ""}`}
-                        onClick={() => {
-                          setBarangayFilter(b);
-                          setBarangayOpen(false);
-                        }}
-                      >
-                        {b}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="filter-field" ref={monthRef}>
-                <label>Month</label>
-                <button type="button" className="select-btn" onClick={() => setMonthOpen((o) => !o)}>
-                  {monthFilter}
-                  <FiChevronDown className={`chevron${monthOpen ? " open" : ""}`} />
-                </button>
-                {monthOpen && (
-                  <div className="dropdown-menu scrollable">
-                    {["All Months", ...MONTH_NAMES].map((m) => (
-                      <button
-                        key={m}
-                        type="button"
-                        className={`dropdown-item${m === monthFilter ? " active" : ""}`}
-                        onClick={() => {
-                          setMonthFilter(m);
-                          setSelectedDate(null);
-                          setMonthOpen(false);
-                        }}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="filter-field" ref={ageRef}>
-                <label>Age</label>
-                <button type="button" className="select-btn" onClick={() => setAgeOpen((o) => !o)}>
-                  {ageFilter}
-                  <FiChevronDown className={`chevron${ageOpen ? " open" : ""}`} />
-                </button>
-                {ageOpen && (
-                  <div className="dropdown-menu">
-                    {AGE_RANGES.map((r) => (
-                      <button
-                        key={r.label}
-                        type="button"
-                        className={`dropdown-item${r.label === ageFilter ? " active" : ""}`}
-                        onClick={() => {
-                          setAgeFilter(r.label);
-                          setAgeOpen(false);
-                        }}
-                      >
-                        {r.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="filter-field" ref={sortRef}>
-                <label>Sort By</label>
-                <button type="button" className="select-btn" onClick={() => setSortOpen((o) => !o)}>
-                  {sortBy}
-                  <FiChevronDown className={`chevron${sortOpen ? " open" : ""}`} />
-                </button>
-                {sortOpen && (
-                  <div className="dropdown-menu">
-                    {SORT_OPTIONS.map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        className={`dropdown-item${s === sortBy ? " active" : ""}`}
-                        onClick={() => {
-                          setSortBy(s);
-                          setSortOpen(false);
-                        }}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {selectedDate && (
-              <div className="active-filter-chip">
-                Filtering by {formatShortDate(selectedDate.month, selectedDate.day)}
-                <button type="button" onClick={() => setSelectedDate(null)}>
-                  <FiX />
-                </button>
-              </div>
-            )}
-          </section>
+    
 
           {/* Table */}
-          <section className="panel">
-            <h2 className="filters-title">Birthday List</h2>
+         <section className="panel">
+  <div className="birthday-list-toolbar">
+    <div>
+      <h2 className="filters-title">Birthday List</h2>
+      <p className="birthday-list-subtitle">
+        Browse and manage senior citizen birthdays.
+      </p>
+    </div>
 
+    <div className="search-box birthday-search">
+      <input
+        type="text"
+        placeholder="Search by name..."
+        value={searchName}
+        onChange={(e) => setSearchName(e.target.value)}
+      />
+      <FiSearch />
+    </div>
+  </div>
             <div className="table-scroll">
               <table className="bl-table">
                 <thead>
@@ -962,20 +848,8 @@ useEffect(() => {
               </div>
             </div>
           </section>
-
-          {/* Notification bar */}
-          <section className="notification-bar">
-            <FiBell />
-            <span>{notifText()}</span>
-            <button type="button" className="btn-outline btn-sm" onClick={() => setNotifModalOpen(true)}>
-              Manage Notification Settings
-            </button>
-          </section>
-        </div>
-
-        {/* Right column */}
-        <div className="bl-side">
-          <section className="panel">
+            <div className="bl-side">
+           <section className="panel">
             <div className="panel-header">
               <h2>
                 <FiGift className="panel-header-icon" /> Upcoming Birthdays
@@ -1002,10 +876,7 @@ useEffect(() => {
             </div>
           </section>
 
-          <div ref={calendarRef}>
-            <BirthdayCalendar seniors={seniors} selectedDate={selectedDate} onSelectDate={handleSelectDate} />
-          </div>
-
+       
           <GreetingGenerator seniors={seniors} />
         </div>
       </div>
@@ -1018,6 +889,16 @@ useEffect(() => {
           onClose={() => setNotifModalOpen(false)}
         />
       )}
+      
     </div>
+       {/* Notification bar */}
+          <section className="notification-bar">
+            <FiBell />
+            <span>{notifText()}</span>
+            <button type="button" className="btn-outline btn-sm" onClick={() => setNotifModalOpen(true)}>
+              Manage Notification Settings
+            </button>
+          </section>
+        </div>
   );
 }

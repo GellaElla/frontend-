@@ -15,51 +15,13 @@ import {
 } from "react-icons/fi";
 import { BsPinAngleFill } from "react-icons/bs";
 import { PiCakeDuotone } from "react-icons/pi";
+import { useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
 /* ---------------------------------------------------------------- */
 /* Mock data — swap these for real API data                          */
 /* ---------------------------------------------------------------- */
 
-
-const STATS = [
-  {
-    key: "total",
-    label: "Total Applicants",
-    value: 1248,
-    sublabel: "All time total",
-    trend: { value: "8.5%", up: true },
-    icon: FiUsers,
-    tone: "green",
-  },
-  {
-    key: "pending",
-    label: "Pending",
-    value: 126,
-    sublabel: "For verification",
-    trend: { value: "3.4%", up: true },
-    icon: FiClock,
-    tone: "amber",
-  },
-  {
-    key: "verified",
-    label: "Verified",
-    value: 1032,
-    sublabel: "Approved applicants",
-    trend: { value: "7.8%", up: true },
-    icon: FiCheckCircle,
-    tone: "green",
-  },
-  {
-    key: "rejected",
-    label: "Rejected",
-    value: 90,
-    sublabel: "Rejected applications",
-    trend: { value: "2.1%", up: false },
-    icon: FiXCircle,
-    tone: "red",
-  },
-];
 
 const RECENT_APPLICANTS = [
   { id: 1, name: "Juan Dela Cruz", date: "July 25, 2026", time: "10:45 AM", status: "Pending" },
@@ -116,7 +78,7 @@ function StatCard({ icon: Icon, label, value, sublabel, trend, tone }) {
         <span className={`stat-trend ${trend.up ? "up" : "down"}`}>
           {trend.up ? <FiArrowUp /> : <FiArrowDown />}
           {trend.value}
-          <span className="stat-trend-text">vs last month</span>
+        <span className="stat-trend-text">of total applications</span>
         </span>
       </div>
     </div>
@@ -189,6 +151,45 @@ const pendingPct = total > 0 ? pending / total : 0;
 /* Main Dashboard component                                          */
 /* ---------------------------------------------------------------- */
 
+const STATS = [
+  {
+    key: "total",
+    label: "Total Applicants",
+    value: 0,
+    sublabel: "All time total",
+    trend: { value: "0%", up: true },
+    icon: FiUsers,
+    tone: "green",
+  },
+  {
+    key: "pending",
+    label: "Pending",
+    value: 0,
+    sublabel: "For verification",
+    trend: { value: "0%", up: true },
+    icon: FiClock,
+    tone: "amber",
+  },
+  {
+    key: "verified",
+    label: "Verified",
+    value: 0,
+    sublabel: "Approved applicants",
+    trend: { value: "0%", up: true },
+    icon: FiCheckCircle,
+    tone: "green",
+  },
+  {
+    key: "rejected",
+    label: "Rejected",
+    value: 0,
+    sublabel: "Rejected applications",
+    trend: { value: "0%", up: true },
+    icon: FiXCircle,
+    tone: "red",
+  },
+];
+
 export default function Dashboard({
   onViewAllApplicants,
   onViewAllAnnouncements,
@@ -198,6 +199,7 @@ export default function Dashboard({
   const [applications, setApplications] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
   const [seniors, setSeniors] = useState([]);
+  const navigate = useNavigate();
 
 useEffect(() => {
   getApplications()
@@ -229,19 +231,36 @@ useEffect(() => {
     });
 }, []);
 
-const dashboardStats = STATS.map((stat) => ({
-  ...stat,
-  value:
+
+
+const totalApplications = applications.length;
+
+const dashboardStats = STATS.map((stat) => {
+  const value =
     stat.key === "total"
-      ? applications.length
+      ? totalApplications
       : stat.key === "pending"
       ? applications.filter((a) => a.status === "Pending").length
       : stat.key === "verified"
       ? applications.filter((a) => a.status === "Verified").length
       : stat.key === "rejected"
       ? applications.filter((a) => a.status === "Rejected").length
-      : stat.value,
-}));
+      : 0;
+
+  const percentage =
+    totalApplications > 0
+      ? Math.round((value / totalApplications) * 1000) / 10
+      : 0;
+
+  return {
+    ...stat,
+    value,
+    trend: {
+      value: `${percentage}%`,
+      up: true,
+    },
+  };
+});
 
 const recentApplicants = applications.slice(0, 5).map((a) => ({
   id: a.id,
@@ -389,8 +408,12 @@ const birthdays = seniors
 
   const stats = applicationStats[period];
   const totalThisPeriod = stats.newRegistrations;
+  const registrationPercent = totalThisPeriod > 0 ? 100 : 0;
 
-    const [apiMessage, setApiMessage] = useState("");
+  const verifiedPercent = totalThisPeriod > 0  ? Math.round((stats.verified / totalThisPeriod) * 1000) / 10 : 0;
+
+  const pendingPercent = totalThisPeriod > 0   ? Math.round((stats.pending / totalThisPeriod) * 1000) / 10   : 0;
+  const [apiMessage, setApiMessage] = useState("");
 
   
 
@@ -454,7 +477,7 @@ const birthdays = seniors
             <button
               type="button"
               className="btn-outline btn-sm"
-              onClick={onViewAllApplicants}
+             onClick={() => navigate("/document-verification")}
             >
               View All
             </button>
@@ -482,13 +505,7 @@ const birthdays = seniors
             ))}
           </div>
 
-          <button
-            type="button"
-            className="btn-block"
-            onClick={onViewAllApplicants}
-          >
-            View All Applicants
-          </button>
+      
         </section>
 
         <section className="panel">
@@ -541,7 +558,7 @@ const birthdays = seniors
                   <span className="legend-value">{stats.newRegistrations}</span>
                 </span>
                 <span className="legend-trend up">
-                  <FiArrowUp /> 12.6%
+              <FiArrowUp /> {registrationPercent}%
                 </span>
               </div>
               <div className="legend-item">
@@ -551,7 +568,7 @@ const birthdays = seniors
                   <span className="legend-value">{stats.verified}</span>
                 </span>
                 <span className="legend-trend up">
-                  <FiArrowUp /> 8.3%
+                <FiArrowUp /> {verifiedPercent}%
                 </span>
               </div>
               <div className="legend-item">
@@ -561,7 +578,7 @@ const birthdays = seniors
                   <span className="legend-value">{stats.pending}</span>
                 </span>
                 <span className="legend-trend down">
-                  <FiArrowDown /> 4.7%
+                  <FiArrowDown /> {pendingPercent}%
                 </span>
               </div>
             </div>
@@ -585,7 +602,7 @@ const birthdays = seniors
             <button
               type="button"
               className="btn-outline btn-sm"
-              onClick={onViewAllAnnouncements}
+             onClick={() => navigate("/announcements")}
             >
               View All
             </button>
@@ -625,7 +642,7 @@ const birthdays = seniors
             <button
               type="button"
               className="btn-outline btn-sm"
-              onClick={onViewAllBirthdays}
+              onClick={() => navigate("/birthday-list")}
             >
               View All
             </button>
